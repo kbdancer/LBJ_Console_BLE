@@ -1,0 +1,151 @@
+import 'dart:async';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:lbjconsole/models/train_record.dart';
+
+class NotificationService {
+  static const String channelId = 'lbj_messages';
+  static const String channelName = 'LBJ Messages';
+  static const String channelDescription = 'Receive LBJ messages';
+
+  final FlutterLocalNotificationsPlugin _notificationsPlugin =
+      FlutterLocalNotificationsPlugin();
+  int _notificationId = 1000;
+  bool _notificationsEnabled = true;
+
+  final StreamController<bool> _settingsController =
+      StreamController<bool>.broadcast();
+  Stream<bool> get settingsStream => _settingsController.stream;
+
+  Future<void> initialize() async {
+    const AndroidInitializationSettings initializationSettingsAndroid =
+        AndroidInitializationSettings('@mipmap/ic_launcher');
+
+    const LinuxInitializationSettings initializationSettingsLinux =
+        LinuxInitializationSettings(defaultActionName: 'Open notification');
+
+    const InitializationSettings initializationSettings =
+        InitializationSettings(
+      android: initializationSettingsAndroid,
+      linux: initializationSettingsLinux,
+    );
+
+    await _notificationsPlugin.initialize(
+      initializationSettings,
+      onDidReceiveNotificationResponse: (details) {},
+    );
+
+    await _createNotificationChannel();
+
+    _notificationsEnabled = await isNotificationEnabled();
+    _settingsController.add(_notificationsEnabled);
+  }
+
+  Future<void> _createNotificationChannel() async {
+    const AndroidNotificationChannel channel = AndroidNotificationChannel(
+      channelId,
+      channelName,
+      description: channelDescription,
+      importance: Importance.high,
+      enableVibration: true,
+      playSound: true,
+    );
+
+    await _notificationsPlugin
+        .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin>()
+        ?.createNotificationChannel(channel);
+  }
+
+  Future<void> showTrainNotification(TrainRecord record) async {
+    if (!_notificationsEnabled) return;
+
+    if (!_isValidValue(record.train) ||
+        !_isValidValue(record.route) ||
+        !_isValidValue(record.directionText)) {
+      return;
+    }
+
+    const String title = '列车信息';
+    final String body = _buildNotificationContent(record);
+
+    final AndroidNotificationDetails androidPlatformChannelSpecifics =
+        AndroidNotificationDetails(
+      channelId,
+      channelName,
+      channelDescription: channelDescription,
+      importance: Importance.high,
+      priority: Priority.high,
+      ticker: 'ticker',
+      styleInformation: BigTextStyleInformation(body),
+    );
+
+    final NotificationDetails platformChannelSpecifics =
+        NotificationDetails(android: androidPlatformChannelSpecifics);
+
+    await _notificationsPlugin.show(
+      _notificationId++,
+      title,
+      body,
+      platformChannelSpecifics,
+      payload: 'train_${record.train}',
+    );
+  }
+
+  String _buildNotificationContent(TrainRecord record) {
+    final buffer = StringBuffer();
+
+    buffer.write(record.fullTrainNumber);
+    if (_isValidValue(record.route)) {
+      buffer.write(' ${record.route}');
+    }
+    if (_isValidValue(record.directionText)) {
+      buffer.write(' ${record.directionText}');
+    }
+    if (_isValidValue(record.positionInfo)) {
+      buffer.write(' ${record.positionInfo}');
+    }
+    buffer.writeln();
+    if (_isValidValue(record.resolvedLocoType) && _isValidValue(record.loco)) {
+      final shortLoco = record.loco.length > 5
+          ? record.loco.substring(record.loco.length - 5)
+          : record.loco;
+      buffer.write('${record.resolvedLocoType}-$shortLoco');
+    } else if (_isValidValue(record.resolvedLocoType)) {
+      buffer.write(record.resolvedLocoType);
+    } else if (_isValidValue(record.loco)) {
+      buffer.write(record.loco);
+    }
+
+    if (_isValidValue(record.speed)) {
+      buffer.write(' ${record.speed}km/h');
+    }
+
+    return buffer.toString().trim();
+  }
+
+  bool _isValidValue(String? value) {
+    if (value == null || value.isEmpty) return false;
+    final trimmed = value.trim();
+    return trimmed.isNotEmpty &&
+        trimmed != 'NUL' &&
+        trimmed != 'NA' &&
+        trimmed != '*';
+  }
+
+  Future<void> enableNotifications(bool enable) async {
+    _notificationsEnabled = enable;
+    _settingsController.add(_notificationsEnabled);
+  }
+
+  Future<bool> isNotificationEnabled() async {
+    return _notificationsEnabled;
+  }
+
+  Future<void> cancelAllNotifications() async {
+    await _notificationsPlugin.cancelAll();
+  }
+
+  void dispose() {
+    _settingsController.close();
+  }
+}
