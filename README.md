@@ -53,7 +53,15 @@
 
 ## 配套固件
 
-需要接收机固件开启 **BLE**（例如本地工程 `SX1276_Receive_LBJ_fusion` 精简版）。若固件同时支持 SD sync 命令，设置页 SD 功能才可用。
+请使用姊妹固件 **[SX1276_Receive_LBJ_BLE](https://github.com/kbdancer/SX1276_Receive_LBJ_BLE)**（纯 BLE）。  
+WiFi 固件 / WiFi App 为另一套配对，本 App 不走 NetJSON。
+
+## 命名对照
+
+| 变体 | App | 固件 |
+|------|-----|------|
+| BLE | `LBJ_Console_BLE` | `SX1276_Receive_LBJ_BLE` |
+| WiFi | `LBJ_Console_WiFi` | `SX1276_Receive_LBJ_WiFi` |
 
 ## 构建
 
