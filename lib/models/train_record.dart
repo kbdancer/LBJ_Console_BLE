@@ -48,20 +48,40 @@ class TrainRecord {
     return digits.replaceFirst(RegExp(r'^0+(?=.)'), '');
   }
 
+  /// Strip LBJ BCD filler / error glyphs from train number (* U space - ) ( X).
+  /// Keeps letters + digits only, e.g. "258*" → "258", "4(607" → "4607".
+  static String normalizeLbjTrain(String? raw) {
+    if (raw == null) return '';
+    final s = raw.trim();
+    if (s.isEmpty || s == 'NUL' || s == '<NUL>' || s.contains('-----')) {
+      return '';
+    }
+    return s.replaceAll(RegExp(r'[^A-Za-z0-9]'), '');
+  }
+
+  /// Train class should be letter(s) like G/D/C/K; drop BCD junk e.g. "4(" → "".
+  static String normalizeLbjClass(String? raw) {
+    if (raw == null) return '';
+    final s = raw.trim();
+    if (s.isEmpty || s == 'NA' || s == 'NUL' || s == '<NUL>') return '';
+    return s.replaceAll(RegExp(r'[^A-Za-z]'), '');
+  }
+
   factory TrainRecord.fromJson(Map<String, dynamic> json) {
     return TrainRecord(
       uniqueId: json['uniqueId'] ?? json['unique_id'] ?? '',
       timestamp: DateTime.fromMillisecondsSinceEpoch(json['timestamp'] ?? 0),
       receivedTimestamp: DateTime.fromMillisecondsSinceEpoch(
           json['receivedTimestamp'] ?? json['received_timestamp'] ?? 0),
-      train: json['train'] ?? '',
+      train: normalizeLbjTrain(json['train']?.toString()),
       direction: json['direction'] ?? json['dir'] ?? 0,
       speed: normalizeLbjSpeed(json['speed']?.toString()),
       position: json['position'] ?? json['pos'] ?? '',
       time: json['time'] ?? '',
       loco: json['loco'] ?? '',
       locoType: json['locoType'] ?? json['loco_type'] ?? '',
-      lbjClass: json['lbjClass'] ?? json['lbj_class'] ?? '',
+      lbjClass: normalizeLbjClass(
+          json['lbjClass']?.toString() ?? json['lbj_class']?.toString()),
       route: json['route'] ?? '',
       positionInfo: json['positionInfo'] ?? json['position_info'] ?? '',
       rssi: (json['rssi'] ?? 0.0).toDouble(),
@@ -118,14 +138,14 @@ class TrainRecord {
           DateTime.fromMillisecondsSinceEpoch(json['timestamp'] as int? ?? 0),
       receivedTimestamp: DateTime.fromMillisecondsSinceEpoch(
           json['receivedTimestamp'] as int? ?? 0),
-      train: json['train']?.toString() ?? '',
+      train: normalizeLbjTrain(json['train']?.toString()),
       direction: json['direction'] as int? ?? 0,
       speed: normalizeLbjSpeed(json['speed']?.toString()),
       position: json['position']?.toString() ?? '',
       time: json['time']?.toString() ?? '',
       loco: json['loco']?.toString() ?? '',
       locoType: json['locoType']?.toString() ?? '',
-      lbjClass: json['lbjClass']?.toString() ?? '',
+      lbjClass: normalizeLbjClass(json['lbjClass']?.toString()),
       route: json['route']?.toString() ?? '',
       positionInfo: json['positionInfo']?.toString() ?? '',
       rssi: (json['rssi'] as num?)?.toDouble() ?? 0.0,
@@ -159,8 +179,12 @@ class TrainRecord {
   }
 
   String get trainType {
-    final lbjClassValue = lbjClass.isEmpty ? "NA" : lbjClass;
-    return TrainTypeUtil.getTrainType(lbjClassValue, train) ?? '未知';
+    final lbjClassValue = normalizeLbjClass(lbjClass);
+    final trainValue = normalizeLbjTrain(train);
+    if (trainValue.isEmpty) return '未知';
+    return TrainTypeUtil.getTrainType(
+            lbjClassValue.isEmpty ? "NA" : lbjClassValue, trainValue) ??
+        '未知';
   }
 
   String? get locoInfo {
@@ -168,14 +192,14 @@ class TrainRecord {
   }
 
   String get fullTrainNumber {
-    final lbjClassValue = lbjClass.trim();
-    final trainValue = train.trim();
+    final lbjClassValue = normalizeLbjClass(lbjClass);
+    final trainValue = normalizeLbjTrain(train);
 
-    if (trainValue == "<NUL>" || trainValue.contains("-----")) {
+    if (trainValue.isEmpty) {
       return "";
     }
 
-    if (lbjClassValue.isEmpty || lbjClassValue == "NA") {
+    if (lbjClassValue.isEmpty) {
       return trainValue;
     } else {
       return "$lbjClassValue$trainValue";
