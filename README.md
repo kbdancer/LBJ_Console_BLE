@@ -1,28 +1,59 @@
 # LBJ Console BLE
 
-基于上游 [undef-i/LBJ_Console](https://github.com/undef-i/LBJ_Console)（`flutter` 分支）的 **BLE 精简** 变体。
+基于上游 [undef-i/LBJ_Console](https://github.com/undef-i/LBJ_Console)（`flutter` 分支）裁剪/扩展的 **BLE 精简** 变体。
 
-桌面显示名：**LBJ BLE**  
-包名：`org.noxylva.lbjconsole.flutter.ble`
+| 项 | 值 |
+|----|----|
+| 显示名 | **LBJ BLE** |
+| applicationId | `org.noxylva.lbjconsole.flutter.ble` |
+| 对照上游 | https://github.com/undef-i/LBJ_Console/tree/flutter |
+| 许可证 | 与上游一致（见 `LICENSE`，GPLv3） |
 
-## 上游来源
+> **说明：** 本仓库相对上游的功能修改与文档整理，**全部由 AI 编程工具（Cursor Agent）完成**。
 
-| 项 | 说明 |
-|----|------|
-| 上游仓库 | https://github.com/undef-i/LBJ_Console |
-| 上游分支 | `flutter` |
-| 许可证 | 与上游一致（GPLv3，见 `LICENSE`） |
+## 上游基线能力（保留）
 
-## 相对上游 / 相对完整版的主要修改
+上游 `flutter` 分支本身具备：
 
-1. **仅蓝牙通道**：通过 BLE（`LBJReceiver` / FFE0 / FFE1）接收列车 JSON；无 NetJSON TCP 客户端。
-2. **去除 App 侧接收机 WiFi 配网 UI**（本变体不包含 NetJSON / `wifi_*` 设置页能力）。
-3. **保留**：BLE、RTL-TCP、音频输入、地图/历史/合并、SD 相关 BLE 命令（`sd_status` / `sync` 等，取决于固件）。
-4. **应用标识**：独立 `applicationId` 与显示名，可与 WiFi 版并装。
+- BLE 收包（`LBJReceiver` / FFE0·FFE1）
+- RTL-TCP、音频输入
+- 列车记录 / 实时监控 / 地图 / 设置
+- 后台保活与本地通知
+
+## 相对上游的功能修改（本仓库）
+
+### 新增 / 增强
+
+1. **BLE 命令通道扩展**（相对上游 `ble_service`）  
+   - 连接后可请求 `sd_status`、`sync`、`sd_clear` 等  
+   - 设置页增加接收机 **SD 卡状态 / 同步 / 清除**（经 BLE JSON 命令）  
+2. **桌面端数据库**：增加 `sqflite_common_ffi` / `sqlite3_flutter_libs`，便于 Linux 等桌面运行  
+
+### 删除 / 关闭
+
+1. **去除定位相关**  
+   - 删除 `location_service.dart`、依赖 `geolocator` / `geolocator_android`  
+   - Manifest / MSIX 去掉 location 能力  
+2. **不含 NetJSON / 接收机 WiFi 配网页**（与 WiFi 变体分工；上游亦无 NetJSON）
+
+### 调整
+
+1. 独立包名与显示名 **LBJ BLE**，可与 [LBJ_Console_WiFi](https://github.com/kbdancer/LBJ_Console_WiFi) 并装  
+2. 信号源仍为：蓝牙（默认）/ RTL-TCP / 音频  
+
+## 信号源对照
+
+| 信号源 | 上游 | 本仓库 |
+|--------|------|--------|
+| 蓝牙 BLE | ✅ | ✅（默认，并扩展 SD/sync 命令） |
+| NetJSON (WiFi TCP) | ❌ | ❌ |
+| RTL-TCP | ✅ | ✅ |
+| 音频输入 | ✅ | ✅ |
+| App 内 GPS 定位 | ✅（geolocator） | ❌ |
 
 ## 配套固件
 
-需刷写带 **BLE** 的接收机固件（例如本地工程中的 `SX1276_Receive_LBJ_fusion` 精简版）。带 NetJSON 的固件也可仅用 BLE 通道对接本 App。
+需要接收机固件开启 **BLE**（例如本地工程 `SX1276_Receive_LBJ_fusion` 精简版）。若固件同时支持 SD sync 命令，设置页 SD 功能才可用。
 
 ## 构建
 
@@ -33,4 +64,6 @@ flutter build apk --debug --target-platform android-arm64
 
 ## 致谢
 
-感谢 [undef-i/LBJ_Console](https://github.com/undef-i/LBJ_Console) 及上游文档中列出的相关项目作者。
+感谢 [undef-i/LBJ_Console](https://github.com/undef-i/LBJ_Console) 及其 README 中列出的相关项目作者。本变体在其 `flutter` 分支之上修改。
+
+姊妹仓库：[LBJ_Console_WiFi](https://github.com/kbdancer/LBJ_Console_WiFi)（无蓝牙、走 NetJSON）。
