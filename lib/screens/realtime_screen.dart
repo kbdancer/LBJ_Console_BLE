@@ -233,28 +233,29 @@ class RealtimeScreenState extends State<RealtimeScreen> {
                   Marker(
                     point: position,
                     width: 80,
-                    height: 16,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: Colors.black.withValues(alpha: 0.8),
-                            borderRadius: BorderRadius.circular(3),
-                          ),
-                          child: Text(
-                            _getTrainDisplayName(singleRecord),
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 8,
-                              fontWeight: FontWeight.bold,
-                            ),
+                    height: 22,
+                    child: Center(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.8),
+                          borderRadius: BorderRadius.circular(3),
+                        ),
+                        child: Text(
+                          _getTrainDisplayName(singleRecord),
+                          maxLines: 1,
+                          softWrap: false,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 8,
+                            height: 1.0,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                      ],
+                      ),
                     ),
                   ),
                 ],
@@ -282,28 +283,29 @@ class RealtimeScreenState extends State<RealtimeScreen> {
                   Marker(
                     point: routePoints.last,
                     width: 80,
-                    height: 16,
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: Colors.black.withValues(alpha: 0.8),
-                            borderRadius: BorderRadius.circular(3),
-                          ),
-                          child: Text(
-                            _getTrainDisplayName(markerRecord),
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 8,
-                              fontWeight: FontWeight.bold,
-                            ),
+                    height: 22,
+                    child: Center(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.black.withValues(alpha: 0.8),
+                          borderRadius: BorderRadius.circular(3),
+                        ),
+                        child: Text(
+                          _getTrainDisplayName(markerRecord),
+                          maxLines: 1,
+                          softWrap: false,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 8,
+                            height: 1.0,
+                            fontWeight: FontWeight.bold,
                           ),
                         ),
-                      ],
+                      ),
                     ),
                   ),
                 ],

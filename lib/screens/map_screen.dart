@@ -326,30 +326,31 @@ class _MapScreenState extends State<MapScreen> {
           Marker(
             point: position,
             width: 80,
-            height: 16,
+            height: 22,
             child: GestureDetector(
               onTap: () => _showTrainDetailsDialog(record, position),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                    decoration: BoxDecoration(
-                      color: Colors.black.withValues(alpha: 0.8),
-                      borderRadius: BorderRadius.circular(3),
-                    ),
-                    child: Text(
-                      trainDisplay,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 8,
-                        fontWeight: FontWeight.bold,
-                      ),
+              child: Center(
+                child: Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                  decoration: BoxDecoration(
+                    color: Colors.black.withValues(alpha: 0.8),
+                    borderRadius: BorderRadius.circular(3),
+                  ),
+                  child: Text(
+                    trainDisplay,
+                    maxLines: 1,
+                    softWrap: false,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 8,
+                      height: 1.0,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                ],
+                ),
               ),
             ),
           ),
